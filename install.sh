@@ -1,41 +1,34 @@
 #!/bin/bash
 set -e
 
-# === Basic System Update and Dependencies ===
-apt update && apt install -y git wget curl python3 python3-venv python3-pip ffmpeg libgl1 unzip
+# === Dependencies ===
+apt update && apt install -y wget curl ffmpeg libgl1 unzip python3 python3-venv python3-pip
 
-# === Clone AnimateDiff ===
+# === Python Env ===
 cd ~
-git clone https://github.com/continue-revolution/AnimateDiff
-cd AnimateDiff
-
-# === Python Environment Setup ===
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv AnimateDiff-venv
+source AnimateDiff-venv/bin/activate
 
 pip install --upgrade pip
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-pip install -r requirements.txt
+pip install imageio imageio-ffmpeg einops transformers accelerate omegaconf safetensors tqdm
 
-# === Download Stable Diffusion Model ===
-mkdir -p models/StableDiffusion
-cd models/StableDiffusion
-wget https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt -O model.ckpt
-cd ../../
+# === Download AnimateDiff Core ===
+mkdir -p AnimateDiff/scripts
+wget https://raw.githubusercontent.com/continue-revolution/AnimateDiff/main/scripts/inference.py -O AnimateDiff/scripts/inference.py
 
-# === Download AnimateDiff Motion Module ===
-mkdir -p models/Motion_Module
-cd models/Motion_Module
-wget https://huggingface.co/guoyww/animatediff-motion-model/resolve/main/mm_sd_v15_v2.ckpt
-cd ../../
+# === Download Models ===
+mkdir -p AnimateDiff/models/StableDiffusion
+wget https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt -O AnimateDiff/models/StableDiffusion/model.ckpt
 
-# === Test Prompt Run ===
-python3 scripts/inference.py \
-  --sd_model_path models/StableDiffusion/model.ckpt \
-  --motion_module_path models/Motion_Module/mm_sd_v15_v2.ckpt \
-  --prompt "a cinematic drone shot of Lisbon’s Alfama district at sunset" \
-  --seed 42 \
-  --steps 25 \
-  --frames 16 \
-  --fps 8 \
-  --output_dir outputs/test_run
+mkdir -p AnimateDiff/models/Motion_Module
+wget https://huggingface.co/guoyww/animatediff-motion-model/resolve/main/mm_sd_v15_v2.ckpt -O AnimateDiff/models/Motion_Module/mm_sd_v15_v2.ckpt
+
+# === Run Test ===
+python AnimateDiff/scripts/inference.py \
+  --sd_model_path AnimateDiff/models/StableDiffusion/model.ckpt \
+  --motion_module_path AnimateDiff/models/Motion_Module/mm_sd_v15_v2.ckpt \
+  --prompt "cinematic drone shot of the Douro River in Porto, Portugal, sunset" \
+  --seed 42 --steps 25 --frames 16 --fps 8 \
+  --output_dir AnimateDiff/outputs/test_run
+
