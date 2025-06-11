@@ -15,7 +15,7 @@ pip install imageio imageio-ffmpeg einops transformers accelerate omegaconf safe
 
 # === Download AnimateDiff Core ===
 mkdir -p AnimateDiff/scripts
-wget https://raw.githubusercontent.com/continue-revolution/AnimateDiff/main/scripts/inference.py -O AnimateDiff/scripts/inference.py
+wget https://raw.githubusercontent.com/L1-Tech/animatediff-vast-setup/main/inference.py -O AnimateDiff/scripts/inference.py
 
 # === Download Models ===
 mkdir -p AnimateDiff/models/StableDiffusion
@@ -31,4 +31,3 @@ python AnimateDiff/scripts/inference.py \
   --prompt "cinematic drone shot of the Douro River in Porto, Portugal, sunset" \
   --seed 42 --steps 25 --frames 16 --fps 8 \
   --output_dir AnimateDiff/outputs/test_run
-
